@@ -12,8 +12,17 @@ public class PlayerPickup : MonoBehaviour
     public GameObject collectiblePrompt; // "Press E to collect"
     public GameObject removePrompt;      // "Press Q to remove/drop the mask"
 
+    [Header("Drop Settings")]
+    public Vector3 dropOffset = new Vector3(0f, -0.5f, 1.5f);
 
+    [Header("Mask Effects")]
+    public MaskEffectManager effectManager;
+
+    // Currently held pickupable (for moving around / dropping)
     private Pickupable heldObject;
+    // Currently applied mask for effects
+    [HideInInspector] // optional, hides it in Inspector
+    public Pickupable appliedMask;
 
     void Update()
     {
@@ -32,12 +41,20 @@ public class PlayerPickup : MonoBehaviour
 
         if (Physics.Raycast(ray, out RaycastHit hit, pickupDistance))
         {
-            // Normal pickup object
+            // Normal pickup object (mask)
             if (heldObject == null &&
                 hit.collider.TryGetComponent(out Pickupable pickupable))
             {
                 heldObject = pickupable;
                 pickupable.OnPickup();
+
+                // Apply mask effects and store appliedMask separately
+                appliedMask = pickupable;
+                effectManager.ApplyMask(
+                    appliedMask.maskProfile,
+                    appliedMask.overlayImage
+                );
+
                 Debug.Log("Picked up: " + pickupable.name);
             }
 
@@ -45,29 +62,35 @@ public class PlayerPickup : MonoBehaviour
             else if (hit.collider.TryGetComponent(out Collectible collectible))
             {
                 collectible.Collect();
+
+                // If collectible is linked to a mask, clear its effects
+                if (appliedMask != null && appliedMask == collectible.sourcePickupable)
+                {
+                    effectManager.ClearMask(appliedMask.overlayImage);
+                    appliedMask = null;
+                }
             }
         }
     }
+
 
 
     void Drop()
     {
         if (heldObject == null) return;
 
-        Ray ray = new Ray(cameraTransform.position, cameraTransform.forward);
+        // Drop relative to player
+        Vector3 dropPos =
+            transform.position +
+            transform.right * dropOffset.x +
+            transform.up * dropOffset.y +
+            transform.forward * dropOffset.z;
 
-        Vector3 dropPos;
-
-        // If we hit something, drop at hit point
-        if (Physics.Raycast(ray, out RaycastHit hit, pickupDistance))
+        // Remove mask effects using appliedMask
+        if (appliedMask != null)
         {
-            dropPos = hit.point;
-        }
-        else
-        {
-            // Otherwise drop at max distance
-            dropPos = cameraTransform.position +
-                      cameraTransform.forward * pickupDistance;
+            effectManager.ClearMask(appliedMask.overlayImage);
+            appliedMask = null;
         }
 
         heldObject.OnDrop(dropPos);
@@ -75,6 +98,9 @@ public class PlayerPickup : MonoBehaviour
         Debug.Log("Dropped: " + heldObject.name);
         heldObject = null;
     }
+
+
+
 
     void CheckForInteractable()
     {

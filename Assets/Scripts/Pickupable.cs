@@ -1,8 +1,12 @@
+using UnityEngine.Rendering;
 using UnityEngine;
 
 public class Pickupable : MonoBehaviour
 {
     [HideInInspector] public Rigidbody rb;
+
+    public VolumeProfile maskProfile;
+    public GameObject overlayImage;
 
     [Header("Linked Collectible")]
     public GameObject linkedCollectible;
