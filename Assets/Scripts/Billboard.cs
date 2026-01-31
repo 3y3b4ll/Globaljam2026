@@ -9,7 +9,9 @@ public class Billboard : MonoBehaviour
 
     void Awake()
     {
-        cam = Camera.main;
+        GameObject camObj = GameObject.Find("PlayerCamera");
+        if (camObj != null)
+            cam = camObj.GetComponent<Camera>();
     }
 
     void LateUpdate()
