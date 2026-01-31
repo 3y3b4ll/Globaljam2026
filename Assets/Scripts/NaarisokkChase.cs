@@ -18,6 +18,7 @@ public class NaarisokkChase : MonoBehaviour
     [Header("Ground Snap")]
     public float rayStartHeight = 10f;
     public float groundOffset = 0.05f;
+    public LayerMask groundLayer;
 
     [Header("House Avoidance")]
     public Transform[] houseCenters;
@@ -166,7 +167,7 @@ public class NaarisokkChase : MonoBehaviour
     {
         Ray ray = new Ray(transform.position + Vector3.up * rayStartHeight, Vector3.down);
 
-        if (Physics.Raycast(ray, out RaycastHit hit, rayStartHeight * 2f))
+        if (Physics.Raycast(ray, out RaycastHit hit, rayStartHeight * 2f, groundLayer, QueryTriggerInteraction.Ignore))
         {
             Vector3 pos = transform.position;
             pos.y = hit.point.y + groundOffset;
