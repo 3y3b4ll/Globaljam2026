@@ -2,72 +2,175 @@ using UnityEngine;
 
 public class NaarisokkChase : MonoBehaviour
 {
-    [Header("Target")]
+    [Header("References")]
     public Transform player;
+    public SafeZoneDetector SafeZoneDetector;
+    AudioSource audioSrc;
 
-    [Header("Movement")]
-    public float moveSpeed = 2f;
-    public float stopDistance = 3f;
+    [Header("Speeds")]
+    public float wanderSpeed = 1.1f;
+    public float chaseSpeed = 2.6f;
 
-    [Header("Activation")]
-    public float activationDistance = 25f;
-    public bool requireLineOfSight = false;
+    [Header("Behavior")]
+    public float chaseRadius = 18f;
+    public float maxRoamDistance = 45f;
 
-    [Header("Grounding")]
-    public float groundCheckHeight = 2f;
+    [Header("Ground Snap")]
+    public float rayStartHeight = 10f;
     public float groundOffset = 0.05f;
-    public LayerMask groundLayer;
 
-    private bool isActive = false;
+    [Header("House Avoidance")]
+    public Transform[] houseCenters;
+    public float avoidRadius = 7f;
+    public float avoidStrength = 2.5f;
+
+    [Header("Wander Control")]
+    public float wanderSegmentTime = 3f;
+
+    [Header("Bounds")]
+    public float wallCheckDistance = 1.6f;
+    public LayerMask wallLayer;
+
+    // --- internal ---
+    bool chasing;
+    Vector3 wanderDir;
+    float wanderTimer;
+
+    void Start()
+    {
+        audioSrc = GetComponent<AudioSource>();
+        PickNewWanderDirection();
+        wanderTimer = wanderSegmentTime;
+    }
 
     void Update()
     {
-        if (player == null)
+        if (player == null) return;
+
+        float d = Vector3.Distance(transform.position, player.position);
+
+        // --- chase decision ---
+        chasing = d < chaseRadius && !SafeZoneDetector.inSafeZone;
+
+        // leash — don’t disappear forever
+        if (d > maxRoamDistance)
+            chasing = true;
+
+        if (chasing)
         {
-            Debug.Log("Player is NULL");
-            return;
+            MoveChase();
+            if (audioSrc) audioSrc.enabled = true;
+        }
+        else
+        {
+            MoveWander();
+            if (audioSrc) audioSrc.enabled = false;
         }
 
-        Vector3 dir = player.position - transform.position;
-        dir.y = 0f;
-
-        transform.position += dir.normalized * moveSpeed * Time.deltaTime;
+        SnapToGround();
     }
 
-    void MoveTowardsPlayer()
+    // =========================
+    // CHASE
+    // =========================
+
+    void MoveChase()
     {
-        Vector3 direction = player.position - transform.position;
-        direction.y = 0f;
+        Vector3 toPlayer = player.position - transform.position;
+        toPlayer.y = 0f;
 
-        transform.position += direction.normalized * moveSpeed * Time.deltaTime;
+        Vector3 dir = ApplyHouseAvoidance(toPlayer.normalized);
+        dir = ApplyWallAvoidance(dir);
+
+        transform.position += dir * chaseSpeed * Time.deltaTime;
     }
 
-    bool HasLineOfSight()
+    // =========================
+    // WANDER
+    // =========================
+
+    void MoveWander()
     {
-        if (!requireLineOfSight) return true;
+        wanderTimer -= Time.deltaTime;
 
-        Vector3 origin = transform.position + Vector3.up * 1.5f;
-        Vector3 target = player.position + Vector3.up * 1.5f;
+        if (wanderTimer <= 0f)
+        {
+            PickNewWanderDirection();
+            wanderTimer = wanderSegmentTime;
+        }
 
-        return !Physics.Raycast(origin, target - origin, Vector3.Distance(origin, target));
+        Vector3 dir = wanderDir;
+        dir = ApplyHouseAvoidance(dir);
+        dir = ApplyWallAvoidance(dir);
+
+        transform.position += dir * wanderSpeed * Time.deltaTime;
     }
+
+    void PickNewWanderDirection()
+    {
+        Vector2 r = Random.insideUnitCircle.normalized;
+        Vector3 toPlayer = (player.position - transform.position).normalized;
+
+        wanderDir = (new Vector3(r.x, 0, r.y) + toPlayer * 0.15f).normalized;
+    }
+
+    // =========================
+    // HOUSE AVOIDANCE
+    // =========================
+
+    Vector3 ApplyHouseAvoidance(Vector3 baseDir)
+    {
+        Vector3 avoid = Vector3.zero;
+
+        foreach (var h in houseCenters)
+        {
+            if (h == null) continue;
+
+            Vector3 away = transform.position - h.position;
+            away.y = 0f;
+
+            float dist = away.magnitude;
+
+            if (dist < avoidRadius)
+            {
+                float force = 1f - (dist / avoidRadius);
+                avoid += away.normalized * force * avoidStrength;
+            }
+        }
+
+        return (baseDir + avoid).normalized;
+    }
+
+    // =========================
+    // WALL / MAP BOUNDS AVOID
+    // =========================
+
+    Vector3 ApplyWallAvoidance(Vector3 dir)
+    {
+        Ray ray = new Ray(transform.position + Vector3.up * 0.5f, dir);
+
+        if (Physics.Raycast(ray, wallCheckDistance, wallLayer))
+        {
+            dir = Vector3.Reflect(dir, ray.direction);
+            PickNewWanderDirection();
+        }
+
+        return dir.normalized;
+    }
+
+    // =========================
+    // GROUND SNAP
+    // =========================
 
     void SnapToGround()
     {
-        Ray ray = new Ray(transform.position + Vector3.up * groundCheckHeight, Vector3.down);
-        RaycastHit hit;
+        Ray ray = new Ray(transform.position + Vector3.up * rayStartHeight, Vector3.down);
 
-        if (Physics.Raycast(ray, out hit, groundCheckHeight * 2f, groundLayer))
+        if (Physics.Raycast(ray, out RaycastHit hit, rayStartHeight * 2f))
         {
             Vector3 pos = transform.position;
             pos.y = hit.point.y + groundOffset;
             transform.position = pos;
         }
-
-        Debug.DrawRay(
-        transform.position + Vector3.up * groundCheckHeight,
-        Vector3.down * groundCheckHeight * 2f,
-        Color.red
-        );
     }
 }
