@@ -50655,7 +50655,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1227341139}
   - component: {fileID: 1227341142}
-  - component: {fileID: 1227341143}
   - component: {fileID: 1227341140}
   m_Layer: 5
   m_Name: Tutorial text
@@ -50673,15 +50672,14 @@ RectTransform:
   m_GameObject: {fileID: 1227341138}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 0.31490114, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 1515266709}
-  m_Father: {fileID: 2084623293}
+  m_Children: []
+  m_Father: {fileID: 1515266709}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 39.700005, y: -11.800013}
+  m_AnchoredPosition: {x: 7.7465916, y: -9.700035}
   m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1227341140
@@ -50783,20 +50781,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1227341138}
   m_CullTransparentMesh: 1
---- !u!114 &1227341143
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1227341138}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1652db5aac55e6343a64604a5be6a098, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::AutoHideUI
-  visibleTime: 3
-  fadeTime: 1.5
 --- !u!4 &1229967398 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 6133028129458832795, guid: ee56320939985e546b2e5242cb53ec96, type: 3}
@@ -56773,6 +56757,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1382695228}
   - component: {fileID: 1382695227}
+  - component: {fileID: 1382695229}
   m_Layer: 0
   m_Name: DialogueManager
   m_TagString: Untagged
@@ -56810,6 +56795,21 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1382695229
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1382695226}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1652db5aac55e6343a64604a5be6a098, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AutoHideUI
+  panel: {fileID: 1515266712}
+  visibleTime: 3
+  fadeTime: 1.5
 --- !u!1001 &1383158341
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -62471,8 +62471,9 @@ GameObject:
   - component: {fileID: 1515266709}
   - component: {fileID: 1515266711}
   - component: {fileID: 1515266710}
+  - component: {fileID: 1515266712}
   m_Layer: 5
-  m_Name: Panel
+  m_Name: StartDialogue
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -62489,13 +62490,14 @@ RectTransform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 3.1755996, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1227341139}
+  m_Children:
+  - {fileID: 1227341139}
+  m_Father: {fileID: 2084623293}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -24.60006, y: 9.700051}
-  m_SizeDelta: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 15.099976, y: -2.0999756}
+  m_SizeDelta: {x: -599.99994, y: -399.99997}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1515266710
 MonoBehaviour:
@@ -62535,6 +62537,18 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1515266708}
   m_CullTransparentMesh: 1
+--- !u!225 &1515266712
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1515266708}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 0
+  m_BlocksRaycasts: 0
+  m_IgnoreParentGroups: 0
 --- !u!1001 &1515719211
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -87294,7 +87308,7 @@ RectTransform:
   m_LocalScale: {x: 0, y: 0, z: 0}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 1227341139}
+  - {fileID: 1515266709}
   - {fileID: 956555844}
   - {fileID: 1345000693}
   - {fileID: 76837497}

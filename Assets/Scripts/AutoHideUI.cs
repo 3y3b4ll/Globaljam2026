@@ -1,38 +1,31 @@
 using UnityEngine;
-using TMPro;
 
 public class AutoHideUI : MonoBehaviour
 {
+    public CanvasGroup panel;   // StartDialoguePanel
     public float visibleTime = 3f;
     public float fadeTime = 1.5f;
 
-    TextMeshProUGUI txt;
-
     void Start()
     {
-        txt = GetComponent<TextMeshProUGUI>();
-        Invoke(nameof(StartFade), visibleTime);
+        StartCoroutine(HideRoutine());
     }
 
-    void StartFade()
+    System.Collections.IEnumerator HideRoutine()
     {
-        StartCoroutine(Fade());
-    }
+        // wait before fading
+        yield return new WaitForSeconds(visibleTime);
 
-    System.Collections.IEnumerator Fade()
-    {
-        float t = 0;
-
-        Color c = txt.color;
+        float t = 0f;
 
         while (t < fadeTime)
         {
             t += Time.deltaTime;
-            c.a = Mathf.Lerp(1, 0, t / fadeTime);
-            txt.color = c;
+            panel.alpha = Mathf.Lerp(1f, 0f, t / fadeTime);
             yield return null;
         }
 
-        gameObject.SetActive(false);
+        panel.alpha = 0f;
+        panel.gameObject.SetActive(false);
     }
 }
