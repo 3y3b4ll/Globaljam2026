@@ -3,6 +3,8 @@ using UnityEngine;
 public class Collectible : MonoBehaviour
 {
     public string itemID;
+    public int uiID;
+    public CollectibleUIManager uiManager;
 
     [Header("Linked Mask")]
     public Pickupable sourcePickupable;
@@ -13,6 +15,10 @@ public class Collectible : MonoBehaviour
     public void Collect()
     {
         Debug.Log("Collected: " + itemID);
+
+        // UI update
+        if (uiManager != null)
+            uiManager.Collect(uiID);
 
         // Clear mask effects if this mask is currently applied
         if (playerPickup != null && playerPickup.appliedMask != null)
@@ -31,6 +37,7 @@ public class Collectible : MonoBehaviour
         // Disable the collectible itself
         gameObject.SetActive(false);
     }
+
 
 
 }
