@@ -5,7 +5,6 @@ public class NaarisokkChase : MonoBehaviour
     [Header("References")]
     public Transform player;
     public SafeZoneDetector SafeZoneDetector;
-    AudioSource audioSrc;
 
     [Header("Speeds")]
     public float wanderSpeed = 1.1f;
@@ -32,63 +31,83 @@ public class NaarisokkChase : MonoBehaviour
     public float wallCheckDistance = 1.6f;
     public LayerMask wallLayer;
 
-    [Header("Audio")]
-    public AudioSource chaseAudio;
-    public AudioSource voiceAudio;
+    // =========================
+    // AUDIO SOURCES
+    // =========================
+
+    [Header("Audio Sources")]
+    public AudioSource pantingAudio;       // loop breathing
+    public AudioSource chaseVoiceAudio;    // loud shouts
+    public AudioSource wanderVoiceAudio;   // quiet distant voices
+
+    [Header("Wander Voices")]
     public AudioClip[] wanderVoiceClips;
-    public Vector2 voiceInterval = new Vector2(8f, 18f);
+    public Vector2 wanderVoiceInterval = new Vector2(8f, 18f);
+
+    [Header("Chase Voices")]
+    public AudioClip[] chaseVoiceClips;
+    public Vector2 chaseVoiceInterval = new Vector2(4f, 9f);
+
+    float wanderVoiceTimer;
+    float chaseVoiceTimer;
+    int lastWanderVoice = -1;
+    int lastChaseVoice = -1;
+
+    // =========================
+    // LEASH
+    // =========================
 
     [Header("Leash")]
     public float maxDistance = 60f;
     public float respawnDistance = 18f;
     public Renderer sokkRenderer;
 
-    float voiceTimer;
+    // =========================
+    // INTERNAL
+    // =========================
 
-    // --- internal ---
     bool chasing;
     Vector3 wanderDir;
     float wanderTimer;
 
     void Start()
     {
-        audioSrc = GetComponent<AudioSource>();
-        voiceTimer = Random.Range(voiceInterval.x, voiceInterval.y);
+        wanderVoiceTimer = Random.Range(wanderVoiceInterval.x, wanderVoiceInterval.y);
+        chaseVoiceTimer = Random.Range(chaseVoiceInterval.x, chaseVoiceInterval.y);
+
         PickNewWanderDirection();
         wanderTimer = wanderSegmentTime;
     }
 
     void Update()
     {
-        float d = Vector3.Distance(transform.position, player.position);
-
-        if (d > maxDistance && !sokkRenderer.isVisible)
-        {
-            RepositionNearPlayer();
-        }
-
         if (player == null) return;
 
-        // --- chase decision ---
+        float d = Vector3.Distance(transform.position, player.position);
+
+        if (d > maxDistance && sokkRenderer != null && !sokkRenderer.isVisible)
+            RepositionNearPlayer();
+
         chasing = d < chaseRadius && !SafeZoneDetector.inSafeZone;
 
-        // leash — don’t disappear forever
         if (d > maxRoamDistance)
             chasing = true;
 
         if (chasing)
         {
             MoveChase();
-            
-            if (!chaseAudio.isPlaying)
-                chaseAudio.Play();
+
+            if (pantingAudio && !pantingAudio.isPlaying)
+                pantingAudio.Play();
+
+            HandleChaseVoices();
         }
         else
         {
             MoveWander();
-            
-            if (chaseAudio.isPlaying)
-                chaseAudio.Stop();
+
+            if (pantingAudio && pantingAudio.isPlaying)
+                pantingAudio.Stop();
 
             HandleWanderVoices();
         }
@@ -103,34 +122,71 @@ public class NaarisokkChase : MonoBehaviour
     void RepositionNearPlayer()
     {
         Vector2 r = Random.insideUnitCircle.normalized * respawnDistance;
-
-        Vector3 newPos = player.position + new Vector3(r.x, 0, r.y);
-
-        transform.position = newPos;
+        transform.position = player.position + new Vector3(r.x, 0, r.y);
     }
 
     // =========================
-    // WANDER VOICES
+    // WANDER VOICES (QUIET)
     // =========================
 
     void HandleWanderVoices()
     {
-        if (wanderVoiceClips.Length == 0 || voiceAudio == null)
+        if (wanderVoiceClips.Length == 0 || wanderVoiceAudio == null)
             return;
 
-        voiceTimer -= Time.deltaTime;
+        wanderVoiceTimer -= Time.deltaTime;
 
-        if (voiceTimer <= 0f)
+        if (wanderVoiceTimer <= 0f)
         {
-            var clip = wanderVoiceClips[Random.Range(0, wanderVoiceClips.Length)];
-            voiceAudio.PlayOneShot(clip);
+            int i = Random.Range(0, wanderVoiceClips.Length);
 
-            voiceTimer = Random.Range(voiceInterval.x, voiceInterval.y);
+            if (wanderVoiceClips.Length > 1 && i == lastWanderVoice)
+                i = (i + 1) % wanderVoiceClips.Length;
+
+            lastWanderVoice = i;
+
+            wanderVoiceAudio.pitch = Random.Range(0.92f, 1.08f);
+            wanderVoiceAudio.PlayOneShot(wanderVoiceClips[i]);
+
+            wanderVoiceTimer = Random.Range(
+                wanderVoiceInterval.x,
+                wanderVoiceInterval.y
+            );
         }
     }
 
     // =========================
-    // CHASE
+    // CHASE VOICES (LOUD)
+    // =========================
+
+    void HandleChaseVoices()
+    {
+        if (chaseVoiceClips.Length == 0 || chaseVoiceAudio == null)
+            return;
+
+        chaseVoiceTimer -= Time.deltaTime;
+
+        if (chaseVoiceTimer <= 0f)
+        {
+            int i = Random.Range(0, chaseVoiceClips.Length);
+
+            if (chaseVoiceClips.Length > 1 && i == lastChaseVoice)
+                i = (i + 1) % chaseVoiceClips.Length;
+
+            lastChaseVoice = i;
+
+            chaseVoiceAudio.pitch = Random.Range(0.92f, 1.08f);
+            chaseVoiceAudio.PlayOneShot(chaseVoiceClips[i]);
+
+            chaseVoiceTimer = Random.Range(
+                chaseVoiceInterval.x,
+                chaseVoiceInterval.y
+            );
+        }
+    }
+
+    // =========================
+    // MOVEMENT
     // =========================
 
     void MoveChase()
@@ -144,10 +200,6 @@ public class NaarisokkChase : MonoBehaviour
         transform.position += dir * chaseSpeed * Time.deltaTime;
     }
 
-    // =========================
-    // WANDER
-    // =========================
-
     void MoveWander()
     {
         wanderTimer -= Time.deltaTime;
@@ -158,8 +210,7 @@ public class NaarisokkChase : MonoBehaviour
             wanderTimer = wanderSegmentTime;
         }
 
-        Vector3 dir = wanderDir;
-        dir = ApplyHouseAvoidance(dir);
+        Vector3 dir = ApplyHouseAvoidance(wanderDir);
         dir = ApplyWallAvoidance(dir);
 
         transform.position += dir * wanderSpeed * Time.deltaTime;
@@ -169,12 +220,11 @@ public class NaarisokkChase : MonoBehaviour
     {
         Vector2 r = Random.insideUnitCircle.normalized;
         Vector3 toPlayer = (player.position - transform.position).normalized;
-
         wanderDir = (new Vector3(r.x, 0, r.y) + toPlayer * 0.15f).normalized;
     }
 
     // =========================
-    // HOUSE AVOIDANCE
+    // AVOIDANCE
     // =========================
 
     Vector3 ApplyHouseAvoidance(Vector3 baseDir)
@@ -200,10 +250,6 @@ public class NaarisokkChase : MonoBehaviour
         return (baseDir + avoid).normalized;
     }
 
-    // =========================
-    // WALL / MAP BOUNDS AVOID
-    // =========================
-
     Vector3 ApplyWallAvoidance(Vector3 dir)
     {
         Ray ray = new Ray(transform.position + Vector3.up * 0.5f, dir);
@@ -225,7 +271,10 @@ public class NaarisokkChase : MonoBehaviour
     {
         Ray ray = new Ray(transform.position + Vector3.up * rayStartHeight, Vector3.down);
 
-        if (Physics.Raycast(ray, out RaycastHit hit, rayStartHeight * 2f, groundLayer, QueryTriggerInteraction.Ignore))
+        if (Physics.Raycast(ray, out RaycastHit hit,
+            rayStartHeight * 2f,
+            groundLayer,
+            QueryTriggerInteraction.Ignore))
         {
             Vector3 pos = transform.position;
             pos.y = hit.point.y + groundOffset;
