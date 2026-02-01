@@ -6,10 +6,15 @@ using UnityEngine.SceneManagement;
 
 public class LoseSequence : MonoBehaviour
 {
+    [Header("Lose Audio")]
+    public AudioSource loseAudio;
+    public AudioClip loseClip;
+
     public Volume globalVolume;
     public CanvasGroup fadeCanvas;
     public GameObject endUI;
-    public MonoBehaviour playerControlScript;
+    public FPSController playerController;
+
 
     public float vignetteTarget = 0.85f;
     public float vignetteFadeTime = 1.5f;
@@ -32,14 +37,20 @@ public class LoseSequence : MonoBehaviour
         if (triggered) return;
         triggered = true;
 
-        if (playerControlScript)
-            playerControlScript.enabled = false;
+        if (loseAudio && loseClip)
+            loseAudio.PlayOneShot(loseClip);
+
+        if (playerController)
+            playerController.locked = true;
+
 
         StartCoroutine(LoseRoutine());
     }
 
     System.Collections.IEnumerator LoseRoutine()
     {
+        yield return new WaitForSeconds(0.15f);
+
         globalVolume.profile.TryGet(out vignette);
 
         float start = vignette.intensity.value;

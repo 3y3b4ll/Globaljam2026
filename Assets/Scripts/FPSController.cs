@@ -22,7 +22,7 @@ public class FPSController : MonoBehaviour
     private float bobTimer;
     private Vector3 cameraDefaultPos;
 
-
+    public bool locked;
     public Transform cameraTransform;
 
     void Start()
@@ -35,9 +35,24 @@ public class FPSController : MonoBehaviour
 
     void Update()
     {
+        if (locked)
+        {
+            // keep gravity & grounding alive
+            ApplyGravityOnly();
+            return;
+        }
         Move();
         Look();
         HeadBob();
+    }
+
+    void ApplyGravityOnly()
+    {
+        if (controller.isGrounded && velocity.y < 0)
+            velocity.y = -2f;
+
+        velocity.y += gravity * Time.deltaTime;
+        controller.Move(velocity * Time.deltaTime);
     }
 
     void Move()
@@ -103,6 +118,25 @@ public class FPSController : MonoBehaviour
                 Time.deltaTime * bobSmoothing
             );
         }
+    }
+
+    public void ForceLookAt(Vector3 worldTarget)
+    {
+        Vector3 dir = (worldTarget - cameraTransform.position).normalized;
+
+        // --- body yaw ---
+        Vector3 flatDir = new Vector3(dir.x, 0, dir.z);
+        transform.rotation = Quaternion.LookRotation(flatDir);
+
+        // --- camera pitch ---
+        float pitch = -Mathf.Asin(dir.y) * Mathf.Rad2Deg;
+        xRotation = pitch;
+
+        cameraTransform.localRotation = Quaternion.Euler(xRotation, 0f, 0f);
+
+        // reset mouse smoothing so it doesn't snap back
+        currentMouseX = 0f;
+        currentMouseY = 0f;
     }
 
 

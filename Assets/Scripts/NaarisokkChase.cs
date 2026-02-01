@@ -32,6 +32,14 @@ public class NaarisokkChase : MonoBehaviour
     public float wallCheckDistance = 1.6f;
     public LayerMask wallLayer;
 
+    [Header("Audio")]
+    public AudioSource chaseAudio;
+    public AudioSource voiceAudio;
+    public AudioClip[] wanderVoiceClips;
+    public Vector2 voiceInterval = new Vector2(8f, 18f);
+
+    float voiceTimer;
+
     // --- internal ---
     bool chasing;
     Vector3 wanderDir;
@@ -40,6 +48,7 @@ public class NaarisokkChase : MonoBehaviour
     void Start()
     {
         audioSrc = GetComponent<AudioSource>();
+        voiceTimer = Random.Range(voiceInterval.x, voiceInterval.y);
         PickNewWanderDirection();
         wanderTimer = wanderSegmentTime;
     }
@@ -60,15 +69,41 @@ public class NaarisokkChase : MonoBehaviour
         if (chasing)
         {
             MoveChase();
-            if (audioSrc) audioSrc.enabled = true;
+            
+            if (!chaseAudio.isPlaying)
+                chaseAudio.Play();
         }
         else
         {
             MoveWander();
-            if (audioSrc) audioSrc.enabled = false;
+            
+            if (chaseAudio.isPlaying)
+                chaseAudio.Stop();
+
+            HandleWanderVoices();
         }
 
         SnapToGround();
+    }
+
+    // =========================
+    // WANDER VOICES
+    // =========================
+
+    void HandleWanderVoices()
+    {
+        if (wanderVoiceClips.Length == 0 || voiceAudio == null)
+            return;
+
+        voiceTimer -= Time.deltaTime;
+
+        if (voiceTimer <= 0f)
+        {
+            var clip = wanderVoiceClips[Random.Range(0, wanderVoiceClips.Length)];
+            voiceAudio.PlayOneShot(clip);
+
+            voiceTimer = Random.Range(voiceInterval.x, voiceInterval.y);
+        }
     }
 
     // =========================

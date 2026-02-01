@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 1682061918054061238}
   - component: {fileID: 8725876747078643729}
   - component: {fileID: 6852825254276889011}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Safezone
   m_TagString: Safezone
   m_Icon: {fileID: 0}

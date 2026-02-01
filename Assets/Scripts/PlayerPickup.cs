@@ -18,6 +18,10 @@ public class PlayerPickup : MonoBehaviour
     [Header("Mask Effects")]
     public MaskEffectManager effectManager;
 
+    [Header("Pickup Audio")]
+    public AudioSource sfxSource;
+    public AudioClip maskPickupClip;
+
     // Currently held pickupable (for moving around / dropping)
     private Pickupable heldObject;
     // Currently applied mask for effects
@@ -45,6 +49,12 @@ public class PlayerPickup : MonoBehaviour
             if (heldObject == null &&
                 hit.collider.TryGetComponent(out Pickupable pickupable))
             {
+                //play audio
+                if (maskPickupClip)
+                {
+                    sfxSource.PlayOneShot(maskPickupClip);
+                }
+
                 heldObject = pickupable;
                 pickupable.OnPickup();
 
@@ -61,6 +71,13 @@ public class PlayerPickup : MonoBehaviour
             // Collectible object
             else if (hit.collider.TryGetComponent(out Collectible collectible))
             {
+                // play audio
+                if (collectible.pickupClip)
+                {
+                    sfxSource.PlayOneShot(collectible.pickupClip);
+                }
+
+
                 collectible.Collect();
 
                 // If collectible is linked to a mask, clear its effects
