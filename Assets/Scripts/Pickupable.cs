@@ -11,6 +11,10 @@ public class Pickupable : MonoBehaviour
     [Header("Linked Collectible")]
     public GameObject linkedCollectible;
 
+    [Header("Optional Light")]
+    public Light pointLight; // assign in inspector (child light)
+
+
     void Awake()
     {
         rb = GetComponent<Rigidbody>();
@@ -20,21 +24,23 @@ public class Pickupable : MonoBehaviour
     {
         if (rb) rb.isKinematic = true;
 
-        // hide visuals instead of disabling object
-        GetComponent<Collider>().enabled = false;
-        GetComponent<Renderer>().enabled = false;
+        // Hide the mask visually
+        gameObject.SetActive(false);
+
+        // Disable child point light if assigned
+        if (pointLight != null)
+            pointLight.enabled = false;
 
         if (linkedCollectible != null)
             linkedCollectible.SetActive(true);
     }
 
 
+
     public void OnDrop(Vector3 position)
     {
         transform.position = position;
-
-        GetComponent<Collider>().enabled = true;
-        GetComponent<Renderer>().enabled = true;
+        gameObject.SetActive(true);
 
         if (rb)
         {
@@ -43,9 +49,14 @@ public class Pickupable : MonoBehaviour
             rb.angularVelocity = Vector3.zero;
         }
 
+        // Enable child light
+        if (pointLight != null)
+            pointLight.enabled = true;
+
         if (linkedCollectible != null)
             linkedCollectible.SetActive(false);
     }
+
 
     public void IgnorePlayerCollision(Collider playerCol, float time)
     {
