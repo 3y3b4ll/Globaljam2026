@@ -13,7 +13,9 @@ public class PlayerPickup : MonoBehaviour
     public GameObject removePrompt;      // "Press Q to remove/drop the mask"
 
     [Header("Drop Settings")]
-    public Vector3 dropOffset = new Vector3(0f, -0.5f, 1.5f);
+    //public Vector3 dropOffset = new Vector3(0f, -0.5f, 1.5f);
+    public float minDropY = 1f;
+    public Transform dropPoint;
 
     [Header("Mask Effects")]
     public MaskEffectManager effectManager;
@@ -24,9 +26,18 @@ public class PlayerPickup : MonoBehaviour
 
     // Currently held pickupable (for moving around / dropping)
     private Pickupable heldObject;
+    private Collider playerCollider;
+    private GameObject currentTarget;
+
+
     // Currently applied mask for effects
     [HideInInspector] // optional, hides it in Inspector
     public Pickupable appliedMask;
+
+    void Awake()
+    {
+        playerCollider = GetComponent<Collider>();
+    }
 
     void Update()
     {
@@ -96,14 +107,13 @@ public class PlayerPickup : MonoBehaviour
     {
         if (heldObject == null) return;
 
-        // Drop relative to player
-        Vector3 dropPos =
-            transform.position +
-            transform.right * dropOffset.x +
-            transform.up * dropOffset.y +
-            transform.forward * dropOffset.z;
+        Vector3 dropPos = dropPoint.position;
 
-        // Remove mask effects using appliedMask
+        // Safety clamp
+        if (dropPos.y < minDropY)
+            dropPos.y = minDropY;
+
+
         if (appliedMask != null)
         {
             effectManager.ClearMask(appliedMask.overlayImage);
@@ -112,55 +122,71 @@ public class PlayerPickup : MonoBehaviour
 
         heldObject.OnDrop(dropPos);
 
+        heldObject.IgnorePlayerCollision(playerCollider, 0.25f);
+
         Debug.Log("Dropped: " + heldObject.name);
         heldObject = null;
     }
 
-
-
-
     void CheckForInteractable()
     {
-        // Hide all prompts by default
-        pickupPrompt.SetActive(false);
-        holdingPrompt.SetActive(false);
-        collectiblePrompt.SetActive(false);
-        removePrompt.SetActive(false);
-
-        // Optionally, remove any highlights here if using glow/halo
+        GameObject newTarget = null;
 
         Ray ray = new Ray(cameraTransform.position, cameraTransform.forward);
 
         if (Physics.Raycast(ray, out RaycastHit hit, pickupDistance))
         {
-            Pickupable pickupable = hit.collider.GetComponent<Pickupable>();
-            if (pickupable != null)
+            if (hit.collider.GetComponent<Pickupable>() != null ||
+                hit.collider.GetComponent<Collectible>() != null)
             {
-                if (heldObject != null) // already holding a pickupable
-                {
-                    holdingPrompt.SetActive(true);
-                }
-                else
-                {
-                    pickupPrompt.SetActive(true);
-                }
-                return;
-            }
-
-            Collectible collectible = hit.collider.GetComponent<Collectible>();
-            if (collectible != null)
-            {
-                collectiblePrompt.SetActive(true);
-                return;
+                newTarget = hit.collider.gameObject;
             }
         }
 
-        // Show RemovePrompt whenever holding a pickupable, even if looking at nothing
-        if (heldObject != null)
+        // Only update UI if target changed
+        if (newTarget == currentTarget)
+            return;
+
+        currentTarget = newTarget;
+
+        // Hide all prompts
+        pickupPrompt.SetActive(false);
+        holdingPrompt.SetActive(false);
+        collectiblePrompt.SetActive(false);
+        removePrompt.SetActive(false);
+
+        if (currentTarget == null)
         {
-            removePrompt.SetActive(true);
+            if (heldObject != null)
+                removePrompt.SetActive(true);
+            return;
+        }
+
+        Pickupable pickupable = currentTarget.GetComponent<Pickupable>();
+        if (pickupable != null)
+        {
+            if (heldObject != null)
+                holdingPrompt.SetActive(true);
+            else
+                pickupPrompt.SetActive(true);
+            return;
+        }
+
+        Collectible collectible = currentTarget.GetComponent<Collectible>();
+        if (collectible != null)
+        {
+            collectiblePrompt.SetActive(true);
+            return;
         }
     }
 
+
+    void OnDrawGizmos()
+    {
+        if (dropPoint == null) return;
+
+        Gizmos.color = Color.green;
+        Gizmos.DrawSphere(dropPoint.position, 0.1f);
+    }
 
 }

@@ -544,8 +544,10 @@ MonoBehaviour:
   itemID: vookiri
   uiID: 0
   uiManager: {fileID: 544938181}
+  sokkDirector: {fileID: 0}
   sourcePickupable: {fileID: 164064858}
   playerPickup: {fileID: 9101017452514056012}
+  pickupClip: {fileID: 0}
 --- !u!212 &181107155
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -1438,7 +1440,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &499379517
 RectTransform:
   m_ObjectHideFlags: 0
@@ -1898,8 +1900,10 @@ MonoBehaviour:
   itemID: olu
   uiID: 1
   uiManager: {fileID: 544938181}
+  sokkDirector: {fileID: 0}
   sourcePickupable: {fileID: 216189373}
   playerPickup: {fileID: 9101017452514056012}
+  pickupClip: {fileID: 0}
 --- !u!54 &768580115
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -2568,7 +2572,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1157140318
 RectTransform:
   m_ObjectHideFlags: 0
@@ -3000,8 +3004,10 @@ MonoBehaviour:
   itemID: juuksed
   uiID: 2
   uiManager: {fileID: 544938181}
+  sokkDirector: {fileID: 0}
   sourcePickupable: {fileID: 359958735}
   playerPickup: {fileID: 9101017452514056012}
+  pickupClip: {fileID: 0}
 --- !u!54 &1568017274
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -3155,7 +3161,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1571736528
 RectTransform:
   m_ObjectHideFlags: 0
@@ -3801,6 +3807,7 @@ MonoBehaviour:
   gravity: -9.81
   mouseSensitivity: 1.5
   mouseSmoothTime: 0.05
+  locked: 0
   cameraTransform: {fileID: 3699567388633079773}
 --- !u!143 &6905662502873584632
 CharacterController:
@@ -3880,8 +3887,11 @@ MonoBehaviour:
   holdingPrompt: {fileID: 1157140317}
   collectiblePrompt: {fileID: 499379516}
   removePrompt: {fileID: 1571736527}
-  dropOffset: {x: 0, y: 1.5, z: 0.5}
+  minDropY: 1
+  dropPoint: {fileID: 0}
   effectManager: {fileID: 727808715}
+  sfxSource: {fileID: 0}
+  maskPickupClip: {fileID: 0}
   appliedMask: {fileID: 0}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
