@@ -16,10 +16,21 @@ public class FootstepController : MonoBehaviour
     void Update()
     {
         if (!controller.isGrounded)
+        {
+            stepTimer = 0f;
             return;
+        }
 
-        if (controller.velocity.magnitude < 0.2f)
+        float x = Input.GetAxis("Horizontal");
+        float z = Input.GetAxis("Vertical");
+
+        bool moving = Mathf.Abs(x) > 0.1f || Mathf.Abs(z) > 0.1f;
+
+        if (!moving)
+        {
+            stepTimer = 0f;
             return;
+        }
 
         stepTimer -= Time.deltaTime;
 
@@ -30,14 +41,14 @@ public class FootstepController : MonoBehaviour
         }
     }
 
+
     void PlayStep()
     {
         AudioClip[] bank = safeZone.inSafeZone ? floorClips : snowClips;
+        if (bank.Length == 0) return;
 
-        if (bank.Length == 0)
-            return;
-
-        var clip = bank[Random.Range(0, bank.Length)];
-        footstepAudio.PlayOneShot(clip);
+        footstepAudio.pitch = Random.Range(0.93f, 1.07f);
+        footstepAudio.PlayOneShot(bank[Random.Range(0, bank.Length)]);
     }
+
 }
