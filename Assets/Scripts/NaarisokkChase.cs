@@ -38,6 +38,11 @@ public class NaarisokkChase : MonoBehaviour
     public AudioClip[] wanderVoiceClips;
     public Vector2 voiceInterval = new Vector2(8f, 18f);
 
+    [Header("Leash")]
+    public float maxDistance = 60f;
+    public float respawnDistance = 18f;
+    public Renderer sokkRenderer;
+
     float voiceTimer;
 
     // --- internal ---
@@ -55,9 +60,14 @@ public class NaarisokkChase : MonoBehaviour
 
     void Update()
     {
-        if (player == null) return;
-
         float d = Vector3.Distance(transform.position, player.position);
+
+        if (d > maxDistance && !sokkRenderer.isVisible)
+        {
+            RepositionNearPlayer();
+        }
+
+        if (player == null) return;
 
         // --- chase decision ---
         chasing = d < chaseRadius && !SafeZoneDetector.inSafeZone;
@@ -84,6 +94,19 @@ public class NaarisokkChase : MonoBehaviour
         }
 
         SnapToGround();
+    }
+
+    // =========================
+    // TELEPORT
+    // =========================
+
+    void RepositionNearPlayer()
+    {
+        Vector2 r = Random.insideUnitCircle.normalized * respawnDistance;
+
+        Vector3 newPos = player.position + new Vector3(r.x, 0, r.y);
+
+        transform.position = newPos;
     }
 
     // =========================
