@@ -2416,9 +2416,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SpawnVignetteFade
   globalVolume: {fileID: 47913336}
-  startIntensity: 0.75
-  endIntensity: 0.25
-  fadeTime: 3
+  startIntensity: 1
+  endIntensity: 0.3
+  fadeTime: 2
 --- !u!114 &47913335
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6652,9 +6652,9 @@ AudioSource:
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 0}
-  m_Resource: {fileID: 0}
+  m_Resource: {fileID: 8300000, guid: 0ce0742ddb4bd8343864e869e6879e2b, type: 3}
   m_PlayOnAwake: 1
-  m_Volume: 1
+  m_Volume: 0.651
   m_Pitch: 1
   Loop: 1
   Mute: 0
@@ -35143,7 +35143,7 @@ Transform:
   m_GameObject: {fileID: 824125175}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: 0.11147634, z: -0, w: 0.9937671}
-  m_LocalPosition: {x: 432.24, y: 12.27, z: 613.72}
+  m_LocalPosition: {x: 429.4, y: 10.05, z: 601.4}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -35164,11 +35164,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NaarisokkChase
   player: {fileID: 154003136}
+  playerCamera: {fileID: 228787861}
   SafeZoneDetector: {fileID: 154003138}
   wanderSpeed: 3
-  chaseSpeed: 6
-  chaseRadius: 50
+  chaseSpeed: 5.2
+  chaseRadius: 40
   maxRoamDistance: 100
+  maxDistance: 80
+  respawnDistance: 30
+  teleportCooldown: 20
+  teleportChance: 0.45
+  safezoneRepelTime: 6
   rayStartHeight: 10
   groundOffset: 0.05
   groundLayer:
@@ -35184,7 +35190,6 @@ MonoBehaviour:
   - {fileID: 1155072256}
   avoidRadius: 25
   avoidStrength: 2.5
-  wanderSegmentTime: 10
   wallCheckDistance: 1.6
   wallLayer:
     serializedVersion: 2
@@ -35204,9 +35209,7 @@ MonoBehaviour:
   - {fileID: 8300000, guid: 4a66073a7b131564bbeb0ca343baa7eb, type: 3}
   - {fileID: 8300000, guid: cbb45fe100330cb4baec2171234a0c78, type: 3}
   chaseVoiceInterval: {x: 4, y: 6}
-  maxDistance: 60
-  respawnDistance: 30
-  sokkRenderer: {fileID: 1910628682}
+  wanderSegmentTime: 10
 --- !u!82 &824125178
 AudioSource:
   m_ObjectHideFlags: 0
@@ -35353,7 +35356,7 @@ AudioSource:
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 0}
   m_PlayOnAwake: 0
-  m_Volume: 0.585
+  m_Volume: 0.645
   m_Pitch: 1
   Loop: 0
   Mute: 0
@@ -35450,7 +35453,7 @@ AudioSource:
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 0}
   m_PlayOnAwake: 0
-  m_Volume: 0.272
+  m_Volume: 0.332
   m_Pitch: 1
   Loop: 0
   Mute: 0
@@ -40285,9 +40288,9 @@ AudioSource:
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 0}
-  m_Resource: {fileID: 0}
+  m_Resource: {fileID: 8300000, guid: 4fcfc29fd10fa1746ae26f4b7dad2a78, type: 3}
   m_PlayOnAwake: 1
-  m_Volume: 1
+  m_Volume: 0.194
   m_Pitch: 1
   Loop: 1
   Mute: 0
@@ -54332,7 +54335,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LoseSequence
   loseAudio: {fileID: 1242929022}
-  loseClip: {fileID: 0}
+  loseClip: {fileID: 8300000, guid: b0ec8d9aa56842a469bc86722f808d2a, type: 3}
   globalVolume: {fileID: 47913336}
   fadeCanvas: {fileID: 1345000696}
   endUI: {fileID: 76837494}
@@ -54368,7 +54371,7 @@ AudioSource:
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 0}
   m_PlayOnAwake: 0
-  m_Volume: 1
+  m_Volume: 0.77
   m_Pitch: 1
   Loop: 0
   Mute: 0
@@ -74249,72 +74252,6 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 6133028129458832795, guid: ee56320939985e546b2e5242cb53ec96, type: 3}
   m_PrefabInstance: {fileID: 1327064764}
   m_PrefabAsset: {fileID: 0}
---- !u!1 &1691265947
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1691265949}
-  - component: {fileID: 1691265948}
-  m_Layer: 0
-  m_Name: WinVideoPlayer
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!328 &1691265948
-VideoPlayer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1691265947}
-  m_Enabled: 1
-  m_VideoClip: {fileID: 32900000, guid: 69d5b61be0048ba4b87a7efe18e2426c, type: 3}
-  m_TargetCameraAlpha: 1
-  m_TargetCamera3DLayout: 0
-  m_TargetCamera: {fileID: 0}
-  m_TargetTexture: {fileID: 8400000, guid: 0ce664007a88efe4d81523b560b9655c, type: 2}
-  m_TimeReference: 0
-  m_TargetMaterialRenderer: {fileID: 0}
-  m_TargetMaterialProperty: <noninit>
-  m_RenderMode: 2
-  m_AspectRatio: 2
-  m_DataSource: 0
-  m_TimeUpdateMode: 2
-  m_PlaybackSpeed: 1
-  m_AudioOutputMode: 2
-  m_TargetAudioSources: []
-  m_DirectAudioVolumes: []
-  m_Url: 
-  m_EnabledAudioTracks: 
-  m_DirectAudioMutes: 
-  m_ControlledAudioTrackCount: 0
-  m_PlayOnAwake: 1
-  m_SkipOnDrop: 1
-  m_Looping: 0
-  m_WaitForFirstFrame: 1
-  m_FrameReadyEventEnabled: 0
-  m_VideoShaders: []
---- !u!4 &1691265949
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1691265947}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 537.14453, y: 11.81388, z: 583.35315}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!4 &1691893387 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 5852211646360493780, guid: 59280f7b32d81eb4999e7ee774f6ca0d, type: 3}
@@ -74632,7 +74569,7 @@ AudioSource:
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 0}
-  m_Resource: {fileID: 0}
+  m_Resource: {fileID: 8300000, guid: 0ce0742ddb4bd8343864e869e6879e2b, type: 3}
   m_PlayOnAwake: 1
   m_Volume: 1
   m_Pitch: 1
@@ -94997,4 +94934,3 @@ SceneRoots:
   - {fileID: 156466307}
   - {fileID: 175296847}
   - {fileID: 1780354254}
-  - {fileID: 1691265949}

@@ -4,41 +4,79 @@ public class NaarisokkChase : MonoBehaviour
 {
     [Header("References")]
     public Transform player;
+    public Camera playerCamera;
     public SafeZoneDetector SafeZoneDetector;
 
-    [Header("Speeds")]
-    public float wanderSpeed = 1.1f;
-    public float chaseSpeed = 2.6f;
+    // =========================
+    // SPEED
+    // =========================
+
+    [Header("Speed")]
+    public float wanderSpeed = 1.2f;
+    public float chaseSpeed = 5.5f; // slower than player
+
+    // =========================
+    // BEHAVIOR
+    // =========================
 
     [Header("Behavior")]
-    public float chaseRadius = 18f;
-    public float maxRoamDistance = 45f;
+    public float chaseRadius = 25f;
+    public float maxRoamDistance = 60f;
+
+    // =========================
+    // TELEPORT SCARE SYSTEM
+    // =========================
+
+    [Header("Teleport Scare")]
+    public float maxDistance = 80f;
+    public float respawnDistance = 22f;
+    public float teleportCooldown = 20f;
+    public float teleportChance = 0.45f;
+
+    float teleportTimer;
+
+    // =========================
+    // SAFEZONE REPEL
+    // =========================
+
+    [Header("Safezone Repel")]
+    public float safezoneRepelTime = 6f;
+    float safezoneTimer;
+
+    // =========================
+    // GROUND SNAP
+    // =========================
 
     [Header("Ground Snap")]
     public float rayStartHeight = 10f;
     public float groundOffset = 0.05f;
     public LayerMask groundLayer;
 
+    // =========================
+    // HOUSE AVOIDANCE
+    // =========================
+
     [Header("House Avoidance")]
     public Transform[] houseCenters;
     public float avoidRadius = 7f;
     public float avoidStrength = 2.5f;
 
-    [Header("Wander Control")]
-    public float wanderSegmentTime = 3f;
+    // =========================
+    // WALL AVOIDANCE
+    // =========================
 
     [Header("Bounds")]
     public float wallCheckDistance = 1.6f;
     public LayerMask wallLayer;
 
     // =========================
-    // AUDIO SOURCES
+    // AUDIO
     // =========================
 
     [Header("Audio Sources")]
-    public AudioSource pantingAudio;       // loop breathing
-    public AudioSource chaseVoiceAudio;    // loud shouts
-    public AudioSource wanderVoiceAudio;   // quiet distant voices
+    public AudioSource pantingAudio;
+    public AudioSource chaseVoiceAudio;
+    public AudioSource wanderVoiceAudio;
 
     [Header("Wander Voices")]
     public AudioClip[] wanderVoiceClips;
@@ -54,24 +92,22 @@ public class NaarisokkChase : MonoBehaviour
     int lastChaseVoice = -1;
 
     // =========================
-    // LEASH
-    // =========================
-
-    [Header("Leash")]
-    public float maxDistance = 60f;
-    public float respawnDistance = 18f;
-    public Renderer sokkRenderer;
-
-    // =========================
     // INTERNAL
     // =========================
 
     bool chasing;
     Vector3 wanderDir;
     float wanderTimer;
+    public float wanderSegmentTime = 3f;
+
+    // =========================
+    // INIT
+    // =========================
 
     void Start()
     {
+        teleportTimer = teleportCooldown;
+
         wanderVoiceTimer = Random.Range(wanderVoiceInterval.x, wanderVoiceInterval.y);
         chaseVoiceTimer = Random.Range(chaseVoiceInterval.x, chaseVoiceInterval.y);
 
@@ -79,20 +115,45 @@ public class NaarisokkChase : MonoBehaviour
         wanderTimer = wanderSegmentTime;
     }
 
+    // =========================
+    // UPDATE
+    // =========================
+
     void Update()
     {
         if (player == null) return;
 
         float d = Vector3.Distance(transform.position, player.position);
 
-        if (d > maxDistance && sokkRenderer != null && !sokkRenderer.isVisible)
-            RepositionNearPlayer();
+        teleportTimer -= Time.deltaTime;
 
-        chasing = d < chaseRadius && !SafeZoneDetector.inSafeZone;
+        // --- safezone repel ---
+        if (SafeZoneDetector.inSafeZone)
+            safezoneTimer = safezoneRepelTime;
 
-        if (d > maxRoamDistance)
-            chasing = true;
+        if (safezoneTimer > 0f)
+        {
+            safezoneTimer -= Time.deltaTime;
+            chasing = false;
+        }
+        else
+        {
+            chasing = d < chaseRadius;
+            if (d > maxRoamDistance)
+                chasing = true;
+        }
 
+        // --- scare teleport (IN CAMERA VIEW) ---
+        if (d > maxDistance &&
+            teleportTimer <= 0f &&
+            !SafeZoneDetector.inSafeZone &&
+            Random.value < teleportChance)
+        {
+            TeleportIntoCameraEdgeView();
+            teleportTimer = teleportCooldown;
+        }
+
+        // --- behavior ---
         if (chasing)
         {
             MoveChase();
@@ -116,17 +177,25 @@ public class NaarisokkChase : MonoBehaviour
     }
 
     // =========================
-    // TELEPORT
+    // TELEPORT — EDGE OF SCREEN
     // =========================
 
-    void RepositionNearPlayer()
+    void TeleportIntoCameraEdgeView()
     {
-        Vector2 r = Random.insideUnitCircle.normalized * respawnDistance;
-        transform.position = player.position + new Vector3(r.x, 0, r.y);
+        if (playerCamera == null) return;
+
+        float edgeX = Random.value < 0.5f ? 0.08f : 0.92f;
+        float y = Random.Range(0.3f, 0.7f);
+
+        Vector3 vp = new Vector3(edgeX, y, respawnDistance);
+        Vector3 world = playerCamera.ViewportToWorldPoint(vp);
+
+        transform.position = world;
+        SnapToGround();
     }
 
     // =========================
-    // WANDER VOICES (QUIET)
+    // VOICES
     // =========================
 
     void HandleWanderVoices()
@@ -139,7 +208,6 @@ public class NaarisokkChase : MonoBehaviour
         if (wanderVoiceTimer <= 0f)
         {
             int i = Random.Range(0, wanderVoiceClips.Length);
-
             if (wanderVoiceClips.Length > 1 && i == lastWanderVoice)
                 i = (i + 1) % wanderVoiceClips.Length;
 
@@ -150,14 +218,9 @@ public class NaarisokkChase : MonoBehaviour
 
             wanderVoiceTimer = Random.Range(
                 wanderVoiceInterval.x,
-                wanderVoiceInterval.y
-            );
+                wanderVoiceInterval.y);
         }
     }
-
-    // =========================
-    // CHASE VOICES (LOUD)
-    // =========================
 
     void HandleChaseVoices()
     {
@@ -169,7 +232,6 @@ public class NaarisokkChase : MonoBehaviour
         if (chaseVoiceTimer <= 0f)
         {
             int i = Random.Range(0, chaseVoiceClips.Length);
-
             if (chaseVoiceClips.Length > 1 && i == lastChaseVoice)
                 i = (i + 1) % chaseVoiceClips.Length;
 
@@ -180,8 +242,7 @@ public class NaarisokkChase : MonoBehaviour
 
             chaseVoiceTimer = Random.Range(
                 chaseVoiceInterval.x,
-                chaseVoiceInterval.y
-            );
+                chaseVoiceInterval.y);
         }
     }
 
@@ -219,8 +280,10 @@ public class NaarisokkChase : MonoBehaviour
     void PickNewWanderDirection()
     {
         Vector2 r = Random.insideUnitCircle.normalized;
-        Vector3 toPlayer = (player.position - transform.position).normalized;
-        wanderDir = (new Vector3(r.x, 0, r.y) + toPlayer * 0.15f).normalized;
+        Vector3 away =
+            (transform.position - player.position).normalized;
+
+        wanderDir = (new Vector3(r.x, 0, r.y) + away * 0.6f).normalized;
     }
 
     // =========================
